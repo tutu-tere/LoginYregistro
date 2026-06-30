@@ -25,6 +25,11 @@
 						<form:input path="apellido" class="form-control" />
 						<form:errors path="apellido" class="text-danger" />
 					</div>
+          <div>
+            <form:label path="fechaNacimiento">Fecha de nacimiento:</form:label>
+            <form:input path="fechaNacimiento" type="date"/>
+            <form:errors path="fechaNacimiento" cssClass="error"/>  
+          </div>
 					<div>
 						<form:label path="email" >Email:</form:label>
 						<form:input path="email" class="form-control" />
