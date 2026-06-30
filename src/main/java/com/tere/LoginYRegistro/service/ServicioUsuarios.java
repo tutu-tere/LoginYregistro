@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.BindingResult;
 import org.springframework.stereotype.Service;
 
+import com.tere.LoginYRegistro.models.LoginUsuario;
 import com.tere.LoginYRegistro.models.Usuario;
 import com.tere.LoginYRegistro.repository.RepositorioUsuarios;
 
@@ -33,6 +34,22 @@ public class ServicioUsuarios {
       nuevoUsuario.setPassword(passwordHasheado);
 
       return repoUsuarios.save(nuevoUsuario);
+    }
+  }
+  // validaciones de inicio sesion
+
+  public Usuario login(LoginUsuario usuarioIniciandoSesion, BindingResult result) {
+    String email = usuarioIniciandoSesion.getEmailLogin();
+    Usuario existeUsuario = repoUsuarios.findByEmail(email);
+    if (existeUsuario == null) {
+      result.rejectValue("emailLogin", "Unique", "E-mail no registrado");
+    } else if (!BCrypt.checkpw(usuarioIniciandoSesion.getPasswordLogin(), existeUsuario.getPassword())) {
+      result.rejectValue("passwordLogin", "Matches", "Password incorrecto");
+    }
+    if (result.hasErrors()) {
+      return null;
+    } else {
+      return existeUsuario;
     }
   }
 }
