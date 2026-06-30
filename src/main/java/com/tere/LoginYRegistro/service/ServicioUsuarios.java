@@ -16,7 +16,7 @@ public class ServicioUsuarios {
   @Autowired
   private RepositorioUsuarios repoUsuarios;
 
-  public Usuario regristrar(Usuario nuevoUsuario, BindingResult result) {
+  public Usuario registrar(Usuario nuevoUsuario, BindingResult result) {
     String password = nuevoUsuario.getPassword();
     String confirmacion = nuevoUsuario.getConfirmacion();
     if (!password.equals(confirmacion)) {

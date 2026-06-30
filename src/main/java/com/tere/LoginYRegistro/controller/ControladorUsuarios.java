@@ -2,12 +2,18 @@ package com.tere.LoginYRegistro.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PostMapping;
 
 import com.tere.LoginYRegistro.models.LoginUsuario;
 import com.tere.LoginYRegistro.models.Usuario;
 import com.tere.LoginYRegistro.service.ServicioUsuarios;
+
+import org.springframework.ui.Model;
+import jakarta.servlet.http.HttpSession;
+import jakarta.validation.Valid;
 
 @Controller
 public class ControladorUsuarios {
@@ -15,8 +21,66 @@ public class ControladorUsuarios {
   private ServicioUsuarios su;
 
   @GetMapping("/")
-  public String index(@ModelAttribute("nuevoUsuario") Usuario nuevUsuario,
-      @ModelAttribute("loginUsuario") LoginUsuario usuarioIniciandoSesion) {
+  public String index(@ModelAttribute("nuevoUsuario") Usuario nuevoUsuario,
+      @ModelAttribute("loginUsuario") LoginUsuario loginUsuario) {
+
     return "index.jsp";
+
+  }
+
+  // Accion del registro
+  @PostMapping("/registro")
+  public String registro(@Valid @ModelAttribute("nuevoUsuario") Usuario nuevoUsuario,
+      BindingResult result,
+      Model model,
+      HttpSession session) {
+
+    su.registrar(nuevoUsuario, result);
+
+    if (result.hasErrors()) {
+      model.addAttribute("loginUsuario", new LoginUsuario()); // Vuelve a mandar vacío el form inicio de sesión;
+      return "index.jsp";
+    } else {
+      // Guardo al nuevo usuario en sesión
+      session.setAttribute("usuarioEnSesion", nuevoUsuario); // Guardo el objeto usuario
+      return "redirect:/dashboard";
+    }
+
+  }
+
+  // Dashboard
+  @GetMapping("/dashboard")
+  public String dashboard(HttpSession session) {
+    if (session.getAttribute("usuarioEnSesion") == null) {
+      // No ha iniciado sesión
+      return "redirect:/"; // redirijo al inicio de sesión
+    }
+
+    return "dashboard.jsp";
+  }
+
+  // Acción del inicio de sesión
+  @PostMapping("/login")
+  public String login(@Valid @ModelAttribute("loginUsuario") LoginUsuario loginUsuario,
+      BindingResult result,
+      Model model,
+      HttpSession session) {
+
+    Usuario usuarioIntentandoLogin = su.login(loginUsuario, result);
+    if (result.hasErrors()) {
+      model.addAttribute("nuevoUsuario", new Usuario());
+      return "index.jsp";
+    } else {
+      session.setAttribute("usuarioEnSesion", usuarioIntentandoLogin); // Guardo el objeto Usuario
+      return "redirect:/dashboard";
+    }
+
+  }
+
+  @GetMapping("/logout")
+  public String logout(HttpSession session) {
+    session.removeAttribute("usuarioEnSesion"); // Elimina un atributo de la sesión
+    session.invalidate(); // Elimina la sesión completa
+    return "redirect:/";
   }
 }
